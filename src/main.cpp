@@ -10,28 +10,13 @@
 HardwareSerial MidiSerial(1);
 MIDI_CREATE_INSTANCE(HardwareSerial, MidiSerial, MIDI);
 
-uint8_t notes[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t notes[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 bool dirty = false;
 
 BayIndicator display1 = BayIndicator(D4, D5, D3);
 BayIndicator display2 = BayIndicator(D9, D8, D10);
 
-static const int8_t DRUM_MAP[128] = {
-    //  0    1    2    3    4    5    6    7    8    9
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  // 0–9
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  // 10–19
-       -1,  -1,   5,  -1,  -1,  -1,   5,  -1,  -1,  -1,  // 20–29
-       -1,  -1,  -1,  -1,  -1,  -1,   4,  -1,   0,  -1,  // 30–39  (36=Kick, 38=Snare head)
-        0,  -1,   5,   3,   5,   2,   5,   2,   1,   7,  // 40–49  (40=Snare rim, 42=HiHat closed, 43=Tom3 head, 44=HiHat pedal, 45=Tom2 head, 46=HiHat open, 47=Tom2 rim, 48=Tom1 head, 49=Crash1 head)
-        1,   6,   8,   6,  -1,   7,  -1,   8,   3,   6,  // 50–59  (50=Tom1 rim, 51=Ride head, 52=Crash2 head, 53=Ride bell, 55=Crash1 edge, 57=Crash2 edge, 58=Tom3 rim, 59=Ride rim)
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  // 60–69
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  // 70–79
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  // 80–89
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  // 90–99
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  // 100–109
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  // 110–119
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1              // 120–127
-};
+static int8_t DRUM_MAP[128];
 
 void handleNoteOn(byte channel, byte pitch, byte velocity) {
 
@@ -39,18 +24,47 @@ void handleNoteOn(byte channel, byte pitch, byte velocity) {
   int8_t note = DRUM_MAP[pitch];
   uint8_t value = (velocity / 127.) * 192;
 
-//  if (note != -1) {
-//    notes[note] = value;
-//  }
-
-  for (int i = 0; i < 9; i++) {
-    notes[i] = value;
+  if (note != -1) {
+    notes[note] = value;
   }
 
   Serial.printf("Ch:%d Note:%d (%d) Vel:%d (%d)\r\n", channel, pitch, note, velocity, value);
 }
 
 void setup() {
+  memset(DRUM_MAP, -1, sizeof(DRUM_MAP));
+
+  // Set non-default values
+  DRUM_MAP[38] = 0; // snare
+  DRUM_MAP[40] = 0; // snare
+  DRUM_MAP[36] = 0; // kick drum
+
+  DRUM_MAP[48] = 1; // tom high
+  DRUM_MAP[50] = 1; // tom high
+
+  DRUM_MAP[45] = 2; // tom mid
+  DRUM_MAP[47] = 2; // tom mid
+
+  DRUM_MAP[43] = 3; // tom low
+  DRUM_MAP[58] = 3; // tom low
+
+
+  DRUM_MAP[22] = 4; // hi-hat closed
+  DRUM_MAP[26] = 4; // hi-hat open
+  DRUM_MAP[42] = 4; // hi-hat closed
+  DRUM_MAP[44] = 4; // hi-hat pedal
+  DRUM_MAP[46] = 4; // hi-hat open
+
+  DRUM_MAP[51] = 5; // ride
+  DRUM_MAP[53] = 5; // ride bell
+  DRUM_MAP[59] = 5; // ride
+
+  DRUM_MAP[55] = 6; // crash 1
+  DRUM_MAP[49] = 6; // crash 1
+
+  DRUM_MAP[52] = 7; // crash 2
+  DRUM_MAP[57] = 7; // crash 2
+
   Serial.begin(115200);
 
   MidiSerial.begin(31250, SERIAL_8N1, MIDI_RX_PIN, MIDI_TX_PIN);
@@ -69,6 +83,7 @@ void setup() {
 
 void loop() {
   MIDI.read();
+  handleNoteOn(1, rand() % 128, rand() % 128);
 
   if (dirty) {
     dirty = false;
@@ -76,7 +91,7 @@ void loop() {
     display1.fillScreen(MONOOLED_BLACK);
     display2.fillScreen(MONOOLED_BLACK);
 
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 8; i++) {
       display1.fillRect(0, i, notes[i], 1, MONOOLED_WHITE);
       display2.fillRect(0, i, notes[i], 1, MONOOLED_WHITE);
 
