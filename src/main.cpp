@@ -1,14 +1,15 @@
 #include <Arduino.h>
 #include <BayIndicator.h>
-#include <MIDI.h>
+
+#include <BLEMIDI_Transport.h>
+#include <hardware/BLEMIDI_ESP32.h>
 
 #include "Adafruit_GrayOLED.h"
 
 #define MIDI_RX_PIN D7
 #define MIDI_TX_PIN D6
 
-HardwareSerial MidiSerial(1);
-MIDI_CREATE_INSTANCE(HardwareSerial, MidiSerial, MIDI);
+BLEMIDI_CREATE_DEFAULT_INSTANCE();
 
 uint8_t notes[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 bool dirty = false;
@@ -19,10 +20,10 @@ BayIndicator display2 = BayIndicator(D9, D8, D10);
 static int8_t DRUM_MAP[128];
 
 void handleNoteOn(byte channel, byte pitch, byte velocity) {
-
-  dirty = true;
   int8_t note = DRUM_MAP[pitch];
   uint8_t value = (velocity / 127.) * 192;
+
+  dirty = true;
 
   if (note != -1) {
     notes[note] = value;
@@ -67,9 +68,8 @@ void setup() {
 
   Serial.begin(115200);
 
-  MidiSerial.begin(31250, SERIAL_8N1, MIDI_RX_PIN, MIDI_TX_PIN);
+  MIDI.begin();
   MIDI.setHandleNoteOn(handleNoteOn);
-  MIDI.begin(MIDI_CHANNEL_OMNI);
   Serial.println("MIDI ready.");
 
   display1.begin();
@@ -83,7 +83,6 @@ void setup() {
 
 void loop() {
   MIDI.read();
-  handleNoteOn(1, rand() % 128, rand() % 128);
 
   if (dirty) {
     dirty = false;
