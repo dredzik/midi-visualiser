@@ -1,0 +1,25 @@
+setcpm(112/8)
+
+$: s(`[oh hh hh hh] [hh oh hh oh] [hh hh hh hh] [hh hh hh hh]`)
+  .velocity(`[1 .1 1 .1] [1 1 1 1] [1 .1 1 .1] [1 .1 1 .1]`) 
+  .bank('tr909')
+
+$: s(`[- - sd -] [-  - sd -] [- - sd -] [[sd sd] sd sd -]`)
+  .velocity(`[.75]`)
+  .bank('tr909')
+
+$: s(`[bd -  - -] [bd bd bd bd] [- - - [- bd]] [- - - bd]`)
+  .velocity(`[.75]`)
+  .bank('tr909') 
+
+$: note(`
+[d1 a#0 a#0 a#0] [a#0 d1 a#0 d1] [a#0 a#0 a#0 a#0   ] [a#0     a#0 a#0 a#0],
+[-  -   d2  -  ] [-   -  d2  - ] [-   -   d2  -     ] [[d2 d2] d2  d2  -  ],
+[c2 -   -   -  ] [c2  c2 c2  c2] [-   -   -   [- c2]] [-       -   -   c2 ]
+`)
+  .velocity(1)
+  .midi('midi-visualiser-92debf75')
+  .midi('midi-visualiser-9e1264b2')
+
+$: progNum("0").midi('midi-visualiser-92debf75')
+$: progNum("2").midi('midi-visualiser-9e1264b2')
