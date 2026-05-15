@@ -11,7 +11,7 @@
 
 BLEMIDI_CREATE_DEFAULT_INSTANCE();
 
-BayIndicator display1 = BayIndicator(D4, D5, D3);
+BayIndicator display1 = BayIndicator(D4, D3, D5);
 BayIndicator display2 = BayIndicator(D9, D8, D10);
 
 static int8_t DRUM_MAP[128];
