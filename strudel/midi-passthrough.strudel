@@ -1,0 +1,10 @@
+$: progNum(127).midi('midi-visualiser-423464b2 Bluetooth')
+$: progNum(0).midi('midi-visualiser-9e1264b2 Bluetooth')
+$: progNum(2).midi('midi-visualiser-b21264b2 Bluetooth')
+
+const kb = await midikeys('TD-17')
+$: kb()
+  .midi('midi-visualiser-423464b2 Bluetooth')
+  .midi('midi-visualiser-9e1264b2 Bluetooth')
+  .midi('midi-visualiser-b21264b2 Bluetooth')
+
